@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            border: 0px;
+            margin: 0px;
+        }
+
+        /* .color-cointainer{ */
+        /* height:5rem;
+            width:80vw;
+            margin:0 auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border:2px solid;
+        }
+        .colors{
+            height:70%;
+            width:20%;
+        }
+        .red{
+            background-color:salmon;
+        }
+        .blue{
+            background-color:lightblue;
+        }
+        .green{
+            background-color:lightgreen;
+        } */
+        .board {
+            border: 2px solid;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .paint{
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div class="color-cointainer">
+        <div class="colors red"></div>
+        <div class="colors blue"></div>
+        <div class="colors green"></div>
+    </div> -->
+    <div class="container">
+        <h2 class=".paint"> Simple Paint App</h2>
+        <canvas class="board"></canvas>
+        <button class="paint">clear</button>
+    </div>
+    <script>
+        let boardSel = document.querySelector(".board");
+        // let colorCont=document.querySelector(".color-cointainer");
+        // let colorSel=document.querySelectorAll(".colors");
+        let tool = boardSel.getContext("2d");
+        let button=document.querySelector(".paint");
+        boardSel.height = window.innerHeight * (8 / 10);
+        boardSel.width = window.innerWidth * (3 / 5);
+        tool.fillStyle = "lightblue";
+        var BB = boardSel.getBoundingClientRect();
+        button.addEventListener("click",function(e){
+            clearAll();
+        })
+        // tool.fillRect(20,20,window.innerWidth /2,window.innerHeight/2);
+        // tool.beginPath();
+        // tool.strokeStyle="green";
+        // tool.moveTo(100,200);
+        // tool.lineTo(300,200);
+        // tool.stroke();
+        // tool.beginPath();
+        // tool.moveTo(200,100);
+        // tool.strokeStyle="blue";
+        // tool.lineTo(100,200); 
+        // tool.stroke();
+        // tool.beginPath();
+        // tool.moveTo(200,100);
+        // tool.strokeStyle="yellow";
+        // tool.lineTo(300,200);
+        // tool.stroke();
+        let isDown = false;
+        tool.strokeStyle = "black";
+
+        // for(let i=0;i<colorSel.length;i++){
+        //     colorSel[i].addEventListener("click",function(){
+        //         if(colorSel[i].classList[1]=="red"){
+        //             tool.strokeStyle=colorSel[i].classList[1];
+        //         }
+        //         else{
+        //             tool.strokeStyle="light"+colorSel[i].classList[1];
+        //         }
+        // })
+
+        // }
+        function getY(y) {
+            // let obj=colorCont.getBoundingClientRect();
+            return (y - window.innerHeight * (1 / 10));
+        }
+        function getX(x) {
+            // let obj=colorCont.getBoundingClientRect();
+            return x - (window.innerWidth * (1 / 5));
+        }
+        let startX;
+        let startY;
+        let endX;
+        let endY;
+        let arr = ["pink", "lightblue", "lightgreen", "lightyellow"];
+        let indx = -1;
+        var offsetX = BB.left;
+        var offsetY = BB.top;
+        let startdragX;
+        let startdragY;
+        boardSel.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var mx = parseInt(e.clientX - offsetX);
+            var my = parseInt(e.clientY - offsetY);
+            for (var i = shapes.length - 1; i >= 0; i--) {
+                var s = shapes[i];
+                if (mx > s.startX && mx < s.endX && my > s.startY && my < s.endY) {
+                    dragok = true;
+                    s.isDragging = true;
+                    startdragX = mx;
+                    startdragY = my;
+                    break;
+                }
+            }
+            if (dragok == false) {
+                indx = (indx + 1) % 4;
+                newcolor = arr[indx];
+                tool.fillStyle = newcolor;
+                let x = getX(e.clientX);
+                let y = getY(e.clientY);
+                startX = x;
+                startY = y
+                endX = x;
+                endY = y;
+                isDown = true;
+            }
+
+        })
+        let dragok = false;
+        boardSel.addEventListener("mousemove", function (e) {
+            if (dragok) {
+
+                // tell the browser we're handling this mouse event
+                e.preventDefault();
+                e.stopPropagation();
+
+                // get the current mouse position
+                var mx = parseInt(e.clientX - offsetX);
+                var my = parseInt(e.clientY - offsetY);
+
+                // calculate the distance the mouse has moved
+                // since the last mousemove
+                var dx = mx - startdragX;
+                var dy = my - startdragY;
+
+                // move each rect that isDragging 
+                // by the distance the mouse has moved
+                // since the last mousemove
+                for (let i = shapes.length - 1; i >= 0; i--) {
+                    let s = shapes[i];
+                    if (s.isDragging) {
+                        s.startX += dx;
+                        s.startY += dy;
+                        s.endX += dx;
+                        s.endY += dy;
+                        break;
+                    }
+                }
+
+                // redraw the scene with the new rect positions
+                draw();
+
+                // reset the starting mouse position for the next mousemove
+                startdragX = mx;
+                startdragY = my;
+
+            }
+            if (isDown == true) {
+                if (startX > endX && startY > endY) {
+                    tool.clearRect(endX, endY, startX - endX, startY - endY);
+                }
+                else if (startX > endX) {
+                    tool.clearRect(endX, startY, startX - endX, endY - startY);
+                }
+                else if (startY > endY) {
+                    tool.clearRect(startX, endY, endX - startX, startY - endY);
+                }
+                else {
+                    tool.clearRect(startX, startY, endX - startX, endY - startY);
+                }
+                endX = getX(e.clientX);
+                endY = getY(e.clientY);
+                tool.beginPath();
+                tool.moveTo(startX, endY);
+                tool.lineTo((startX + endX) / 2, startY);
+                tool.lineTo(endX, endY);
+                tool.closePath();
+                tool.fill();
+
+                // cleanX=getX(e.clientX);
+                // cleanY=getY(e.clientY);
+            }
+        })
+        function clearAll(){
+            tool.clearRect(0, 0, boardSel.width, boardSel.height);
+            shapes=[];
+        }
+        function clear(){
+            tool.clearRect(0, 0, boardSel.width, boardSel.height);
+        }
+        function draw() {
+            clear();
+                for (var i = 0; i < shapes.length; i++) {
+                // decide if the shape is a rect or circle
+                // (it's a rect if it has a width property)
+                triangle(shapes[i]);
+
+            }
+        }
+        function triangle(obj) {
+            tool.beginPath();
+            tool.moveTo(obj.startX, obj.endY);
+            tool.lineTo((obj.startX + obj.endX) / 2, obj.startY);
+            tool.lineTo(obj.endX, obj.endY);
+            tool.closePath();
+            tool.fillStyle = obj.fill;
+            tool.fill();
+            tool.stroke();
+        }
+        let shapes = [];
+        boardSel.addEventListener("mouseup", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (dragok == false) {
+                if (isDown == true) {
+                    // endX = getX(e.clientX);
+                    // endY = getY(e.clientY);
+                    // tool.beginPath();
+                    // tool.moveTo(startX, endY);
+                    // tool.lineTo((startX + endX) / 2, startY);
+                    // tool.lineTo(endX, endY);
+                    // tool.closePath();
+                    // tool.fill();
+                }
+                // clear all the dragging flags
+                tool.stroke();
+                shapes.push({ startX, startY, endX, endY, fill: newcolor, isDragging: false });
+                isDown = false;
+            }
+            else {
+                dragok = false;
+                for (var i = 0; i < shapes.length; i++) {
+                    shapes[i].isDragging = false;
+                }
+            }
+            draw();
+        })
+    </script>
+</body>
+
+</html>
