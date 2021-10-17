@@ -128,15 +128,18 @@
             e.stopPropagation();
             var mx = parseInt(e.clientX - offsetX);
             var my = parseInt(e.clientY - offsetY);
-            for (var i = shapes.length - 1; i >= 0; i--) {
-                var s = shapes[i];
+            for (let i = shapes.length - 1; i >= 0; i--) {
+                let s = shapes[i];
                 if (mx > s.startX && mx < s.endX && my > s.startY && my < s.endY) {
                     dragok = true;
                     s.isDragging = true;
                     startdragX = mx;
                     startdragY = my;
+                    console.log("selected");
+                    console.log(dragok);
                     break;
                 }
+                console.log(dragok);
             }
             if (dragok == false) {
                 indx = (indx + 1) % 4;
